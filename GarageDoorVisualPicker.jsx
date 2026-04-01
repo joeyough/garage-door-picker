@@ -21,7 +21,6 @@ const SCREEN_STYLE = {
 
 const CDN = "https://azcdn.clopay.com/CONFIGURATOR/IMAGES/V2/PIMAGES/";
 
-/* ─── Real door image component ─── */
 const DoorImage = ({ style, windows, color }) => {
   const styleData = STYLES.find(s => s.id === style);
   const imgFile = styleData?.img || "PSHORT-4R-8C.PNG";
@@ -107,7 +106,6 @@ const DOOR_COLORS = [
 
 const STEPS = ["hero","photo","size","swipe","pick","preview","windows","insulation","color","final","contact","confirm","done"];
 
-/* ─── House preview — adjusted for real images ─── */
 const HousePreview = ({ doorStyle, doorColor, doorWindows, photoURL, size }) => {
   return (
     <div style={{ position:"relative", borderRadius:16, overflow:"hidden", background:"#D5CFC7", aspectRatio:"4/3", boxShadow:C.lift }}>
@@ -126,14 +124,13 @@ const HousePreview = ({ doorStyle, doorColor, doorWindows, photoURL, size }) => 
           <circle cx="250" cy="80" r="22" fill="#F5E642" opacity="0.8"/>
         </svg>
       )}
-      {/* Door overlay — centered at bottom of house */}
       <div style={{
         position: "absolute",
         bottom: photoURL ? "8%" : "0%",
-        left: "50%",
+        left: photoURL ? "50%" : "58%",
         transform: "translateX(-50%)",
-        width: photoURL ? (size === "double" ? "52%" : "32%") : (size === "double" ? "54%" : "30%"),
-        height: photoURL ? "38%" : "37%",
+        width: photoURL ? (size === "double" ? "52%" : "32%") : (size === "double" ? "34%" : "20%"),
+        height: photoURL ? "38%" : "34%",
         transition: "all 0.5s cubic-bezier(0.25,0.1,0.25,1)",
         filter: photoURL ? "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" : "none",
         borderRadius: 2,
