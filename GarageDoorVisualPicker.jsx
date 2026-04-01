@@ -23,10 +23,11 @@ const SCREEN_STYLE = {
 const CDN = "https://azcdn.clopay.com/CONFIGURATOR/IMAGES/V2/PIMAGES/";
 
 /* ─── Real door image component ─── */
-const DoorImage = ({ style, windows, color = "#F0EDE8" }) => {
+const DoorImage = ({ style, windows, color }) => {
   const styleData = STYLES.find(s => s.id === style);
   const imgFile = styleData?.img || "PSHORT-4R-8C.PNG";
   const [loaded, setLoaded] = useState(false);
+  const showTint = color && color !== "#FFFFFF" && color !== "#F0EDE8";
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: "#E8E3DC" }}>
@@ -36,21 +37,23 @@ const DoorImage = ({ style, windows, color = "#F0EDE8" }) => {
         onLoad={() => setLoaded(true)}
         style={{
           width: "100%", height: "100%", objectFit: "cover", display: "block",
-          opacity: loaded ? 1 : 0, transition: "opacity 0.3s ease",
+          opacity: loaded ? 1 : 0, transition: "opacity 0.4s ease",
         }}
       />
-      {/* Color tint via multiply blend */}
-      <div style={{
-        position: "absolute", inset: 0,
-        backgroundColor: color,
-        mixBlendMode: "multiply",
-        pointerEvents: "none",
-      }} />
-      {/* Subtle depth overlay for darker colors */}
-      {isColorDark(color) && (
+      {/* Color tint via multiply blend — only when a real color is selected */}
+      {showTint && (
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 100%)",
+          backgroundColor: color,
+          mixBlendMode: "multiply",
+          pointerEvents: "none",
+        }} />
+      )}
+      {/* Extra depth for very dark colors */}
+      {showTint && isColorDark(color) && (
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.12) 100%)",
           pointerEvents: "none",
         }} />
       )}
@@ -71,7 +74,7 @@ const DoorImage = ({ style, windows, color = "#F0EDE8" }) => {
       {!loaded && (
         <div style={{
           position: "absolute", inset: 0,
-          background: `linear-gradient(110deg, #E8E3DC 30%, #F0EBE4 50%, #E8E3DC 70%)`,
+          background: "linear-gradient(110deg, #E8E3DC 30%, #F0EBE4 50%, #E8E3DC 70%)",
           backgroundSize: "200% 100%",
           animation: "shimmer 1.5s ease-in-out infinite",
         }} />
@@ -81,6 +84,7 @@ const DoorImage = ({ style, windows, color = "#F0EDE8" }) => {
 };
 
 function isColorDark(hex) {
+  if (!hex) return false;
   const c = hex.replace("#", "");
   const r = parseInt(c.substr(0, 2), 16);
   const g = parseInt(c.substr(2, 2), 16);
@@ -274,6 +278,7 @@ export default function GarageDoorVisualPicker() {
     backBtn:{position:"fixed",bottom:24,left:20,width:50,height:50,borderRadius:"50%",border:`1px solid ${C.border}`,background:C.card,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,cursor:"pointer",boxShadow:C.shadow,zIndex:90,color:C.dim},
     tag:(bg)=>({display:"inline-block",padding:"3px 9px",borderRadius:20,fontSize:10,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase",color:"#fff",background:bg}),
     input:{width:"100%",padding:"18px 20px",borderRadius:14,border:`2px solid ${C.border}`,fontSize:18,fontFamily:F.body,background:C.card,outline:"none",boxSizing:"border-box"},
+    doorBox:{background:"#EDE9E3",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",padding:0},
   };
 
   const insCtaLabel=sel.insulation==="yes"?"Continue with insulated →":sel.insulation==="no"?"Continue with standard →":sel.insulation==="unsure"?"Continue — we'll help you decide →":null;
@@ -288,7 +293,7 @@ export default function GarageDoorVisualPicker() {
           <div style={SCREEN_STYLE}>
             <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center" }}>
               <div style={{ marginBottom:22, borderRadius:20, overflow:"hidden", background:C.card, border:`1px solid ${C.border}`, boxShadow:C.lift }}>
-                <HousePreview doorStyle="raised" doorColor="#F0EDE8" doorWindows={true} photoURL={null} size="double" />
+                <HousePreview doorStyle="raised" doorColor="#FFFFFF" doorWindows={true} photoURL={null} size="double" />
               </div>
               <h1 style={{ ...ss.h1, fontSize:32 }}>See your new garage door on your home</h1>
               <p style={{ ...ss.sub, marginBottom:32 }}>Pick a style, choose a color, and see it on your house — all in under a minute.</p>
@@ -373,16 +378,16 @@ export default function GarageDoorVisualPicker() {
                 >
                   {swipeIdx<STYLES.length-1&&(
                     <div ref={bgCardRef} style={{position:"absolute",inset:0,background:C.card,borderRadius:20,border:`1px solid ${C.border}`,transform:"scale(0.94) translateY(14px)",opacity:0.35,overflow:"hidden",willChange:"transform, opacity",pointerEvents:"none"}}>
-                      <div style={{height:210,background:"#EDE9E3",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>
-                        <DoorImage style={STYLES[Math.min(swipeIdx+1,STYLES.length-1)].id} windows={false} color="#D8D3CC" />
+                      <div style={{...ss.doorBox,height:220}}>
+                        <DoorImage style={STYLES[Math.min(swipeIdx+1,STYLES.length-1)].id} windows={false} />
                       </div>
                     </div>
                   )}
                   <div ref={node=>{activeCardRef.current=node;cardRef.current=node;}} style={{position:"absolute",inset:0,background:C.card,borderRadius:20,boxShadow:C.shadow,border:`1.5px solid ${C.border}`,transform:"translate3d(0,0,0) rotate(0deg) scale(1)",overflow:"hidden",willChange:"transform, box-shadow, border-color, opacity"}}>
                     <div ref={keepStampRef} style={{position:"absolute",top:22,left:18,zIndex:5,padding:"8px 20px",borderRadius:8,border:`4px solid ${C.like}`,background:"rgba(45,139,95,0.12)",color:C.like,fontSize:30,fontWeight:900,letterSpacing:"0.1em",transform:"rotate(-12deg) scale(0.6)",opacity:0,pointerEvents:"none"}}>KEEP</div>
                     <div ref={passStampRef} style={{position:"absolute",top:22,right:18,zIndex:5,padding:"8px 20px",borderRadius:8,border:`4px solid ${C.skip}`,background:"rgba(220,107,90,0.12)",color:C.skip,fontSize:30,fontWeight:900,letterSpacing:"0.1em",transform:"rotate(12deg) scale(0.6)",opacity:0,pointerEvents:"none"}}>PASS</div>
-                    <div style={{height:210,background:"#EDE9E3",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>
-                      <DoorImage style={cur.id} windows={false} color="#D8D3CC" />
+                    <div style={{...ss.doorBox,height:220}}>
+                      <DoorImage style={cur.id} windows={false} />
                     </div>
                     <div style={{padding:"20px 24px"}}>
                       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
@@ -427,8 +432,8 @@ export default function GarageDoorVisualPicker() {
             <p style={ss.sub}>Pick your favorite to see what it looks like on your home.</p>
             {options.map(s2=>(
               <button key={s2.id} style={{...ss.card,flexDirection:"column",alignItems:"stretch",padding:0,overflow:"hidden"}} onClick={()=>pick("style",s2.id)}>
-                <div style={{height:130,background:"#EDE9E3",display:"flex",alignItems:"center",justifyContent:"center",padding:0,overflow:"hidden"}}>
-                  <DoorImage style={s2.id} windows={false} color="#D8D3CC" />
+                <div style={{...ss.doorBox,height:140}}>
+                  <DoorImage style={s2.id} windows={false} />
                 </div>
                 <div style={{padding:"16px 20px",display:"flex",alignItems:"center",gap:10}}>
                   <span style={{fontWeight:700,fontSize:17}}>{s2.name}</span>
@@ -461,7 +466,7 @@ export default function GarageDoorVisualPicker() {
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
               {[true,false].map(w=>(
                 <button key={String(w)} onClick={()=>setSel(p=>({...p,windows:w}))} style={{padding:0,borderRadius:16,overflow:"hidden",cursor:"pointer",border:sel.windows===w?`3px solid ${C.accent}`:`2px solid ${C.border}`,background:C.card,boxShadow:C.shadow,transition:"all 0.2s",WebkitTapHighlightColor:"transparent"}}>
-                  <div style={{height:110,background:"#EDE9E3",display:"flex",alignItems:"center",justifyContent:"center",padding:0,overflow:"hidden"}}>
+                  <div style={{...ss.doorBox,height:110}}>
                     <DoorImage style={sel.style} windows={w} color={sel.color} />
                   </div>
                   <div style={{padding:"14px 14px",fontSize:15,fontWeight:600,textAlign:"center"}}>{w?"☀️ With Windows":"🚫 No Windows"}</div>
