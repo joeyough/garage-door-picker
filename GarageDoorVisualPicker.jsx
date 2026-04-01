@@ -19,7 +19,6 @@ const SCREEN_STYLE = {
   display: "flex", flexDirection: "column", animation: "fadeUp 0.32s ease-out",
 };
 
-/* ─── Clopay CDN ─── */
 const CDN = "https://azcdn.clopay.com/CONFIGURATOR/IMAGES/V2/PIMAGES/";
 
 /* ─── Real door image component ─── */
@@ -30,7 +29,7 @@ const DoorImage = ({ style, windows, color }) => {
   const showTint = color && color !== "#FFFFFF" && color !== "#F0EDE8";
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: "#E8E3DC" }}>
+    <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: "#D9D4CC", boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.06)" }}>
       <img
         src={`${CDN}${imgFile}`}
         alt={styleData?.name || "Garage Door"}
@@ -40,7 +39,6 @@ const DoorImage = ({ style, windows, color }) => {
           opacity: loaded ? 1 : 0, transition: "opacity 0.4s ease",
         }}
       />
-      {/* Color tint via multiply blend — only when a real color is selected */}
       {showTint && (
         <div style={{
           position: "absolute", inset: 0,
@@ -49,7 +47,6 @@ const DoorImage = ({ style, windows, color }) => {
           pointerEvents: "none",
         }} />
       )}
-      {/* Extra depth for very dark colors */}
       {showTint && isColorDark(color) && (
         <div style={{
           position: "absolute", inset: 0,
@@ -57,7 +54,6 @@ const DoorImage = ({ style, windows, color }) => {
           pointerEvents: "none",
         }} />
       )}
-      {/* Window overlay */}
       {windows && (
         <div style={{
           position: "absolute", top: 0, left: 0, width: "100%", height: "27%",
@@ -70,11 +66,10 @@ const DoorImage = ({ style, windows, color }) => {
           />
         </div>
       )}
-      {/* Loading shimmer */}
       {!loaded && (
         <div style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(110deg, #E8E3DC 30%, #F0EBE4 50%, #E8E3DC 70%)",
+          background: "linear-gradient(110deg, #D9D4CC 30%, #E3DED6 50%, #D9D4CC 70%)",
           backgroundSize: "200% 100%",
           animation: "shimmer 1.5s ease-in-out infinite",
         }} />
@@ -92,7 +87,6 @@ function isColorDark(hex) {
   return (r * 0.299 + g * 0.587 + b * 0.114) < 120;
 }
 
-/* ─── data ─── */
 const STYLES = [
   { id: "raised", name: "Classic Raised Panel", tag: "Most Popular", tagC: C.accent, sub: "Traditional and timeless", img: "PSHORT-4R-8C.PNG" },
   { id: "carriage", name: "Carriage House", tag: "Classic Charm", tagC: C.warm, sub: "Elegant barn-door feel", img: "COACH-4R-8C.PNG" },
@@ -113,9 +107,8 @@ const DOOR_COLORS = [
 
 const STEPS = ["hero","photo","size","swipe","pick","preview","windows","insulation","color","final","contact","confirm","done"];
 
-/* ─── House preview ─── */
+/* ─── House preview — adjusted for real images ─── */
 const HousePreview = ({ doorStyle, doorColor, doorWindows, photoURL, size }) => {
-  const dw = size==="double"?160:90, dx = size==="double"?70:105;
   return (
     <div style={{ position:"relative", borderRadius:16, overflow:"hidden", background:"#D5CFC7", aspectRatio:"4/3", boxShadow:C.lift }}>
       {photoURL ? (
@@ -133,14 +126,25 @@ const HousePreview = ({ doorStyle, doorColor, doorWindows, photoURL, size }) => 
           <circle cx="250" cy="80" r="22" fill="#F5E642" opacity="0.8"/>
         </svg>
       )}
-      <div style={{ position:"absolute", bottom:photoURL?"8%":0, left:photoURL?"50%":`${dx}px`, transform:photoURL?"translateX(-50%)":"none", width:photoURL?(size==="double"?"52%":"32%"):dw, height:photoURL?"38%":85, transition:"all 0.5s cubic-bezier(0.25,0.1,0.25,1)", filter:photoURL?"drop-shadow(0 2px 8px rgba(0,0,0,0.3))":"none", opacity:photoURL?0.92:1, borderRadius:2, overflow:"hidden" }}>
+      {/* Door overlay — centered at bottom of house */}
+      <div style={{
+        position: "absolute",
+        bottom: photoURL ? "8%" : "0%",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: photoURL ? (size === "double" ? "52%" : "32%") : (size === "double" ? "54%" : "30%"),
+        height: photoURL ? "38%" : "37%",
+        transition: "all 0.5s cubic-bezier(0.25,0.1,0.25,1)",
+        filter: photoURL ? "drop-shadow(0 2px 8px rgba(0,0,0,0.3))" : "none",
+        borderRadius: 2,
+        overflow: "hidden",
+      }}>
         <DoorImage style={doorStyle} windows={doorWindows} color={doorColor} />
       </div>
     </div>
   );
 };
 
-/* ─── velocity tracker ─── */
 function useVelocityTracker() {
   const history = useRef([]);
   const track = useCallback((x,t)=>{const h=history.current;h.push({x,t});while(h.length>1&&t-h[0].t>80)h.shift();},[]);
@@ -278,7 +282,7 @@ export default function GarageDoorVisualPicker() {
     backBtn:{position:"fixed",bottom:24,left:20,width:50,height:50,borderRadius:"50%",border:`1px solid ${C.border}`,background:C.card,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,cursor:"pointer",boxShadow:C.shadow,zIndex:90,color:C.dim},
     tag:(bg)=>({display:"inline-block",padding:"3px 9px",borderRadius:20,fontSize:10,fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase",color:"#fff",background:bg}),
     input:{width:"100%",padding:"18px 20px",borderRadius:14,border:`2px solid ${C.border}`,fontSize:18,fontFamily:F.body,background:C.card,outline:"none",boxSizing:"border-box"},
-    doorBox:{background:"#EDE9E3",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",padding:0},
+    doorBox:{background:"#D6D0C8",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",padding:0,borderBottom:`1px solid ${C.border}`},
   };
 
   const insCtaLabel=sel.insulation==="yes"?"Continue with insulated →":sel.insulation==="no"?"Continue with standard →":sel.insulation==="unsure"?"Continue — we'll help you decide →":null;
@@ -293,7 +297,7 @@ export default function GarageDoorVisualPicker() {
           <div style={SCREEN_STYLE}>
             <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"center" }}>
               <div style={{ marginBottom:22, borderRadius:20, overflow:"hidden", background:C.card, border:`1px solid ${C.border}`, boxShadow:C.lift }}>
-                <HousePreview doorStyle="raised" doorColor="#FFFFFF" doorWindows={true} photoURL={null} size="double" />
+                <HousePreview doorStyle="raised" doorColor="#FFFFFF" doorWindows={false} photoURL={null} size="double" />
               </div>
               <h1 style={{ ...ss.h1, fontSize:32 }}>See your new garage door on your home</h1>
               <p style={{ ...ss.sub, marginBottom:32 }}>Pick a style, choose a color, and see it on your house — all in under a minute.</p>
@@ -311,25 +315,10 @@ export default function GarageDoorVisualPicker() {
             <div style={{ background:C.card, borderRadius:16, padding:4, marginBottom:16, border:`1px solid ${C.border}`, boxShadow:C.shadow, overflow:"hidden" }}>
               <div style={{ borderRadius:12, overflow:"hidden", aspectRatio:"16/8.5", position:"relative" }}>
                 <svg viewBox="0 0 320 200" width="100%" height="100%">
-                  <rect width="320" height="200" fill="#C5DBE8"/>
-                  <rect y="120" width="320" height="80" fill="#93C47D"/>
-                  <polygon points="20,120 160,35 300,120" fill="#B0764F"/>
-                  <rect x="20" y="120" width="280" height="80" fill="#E8DCC8" stroke="#C4B099" strokeWidth="0.5"/>
-                  <rect x="80" y="148" width="24" height="52" rx="1" fill="#7B5B3A"/>
-                  <circle cx="99" cy="176" r="1.5" fill="#C4A050"/>
-                  <rect x="38" y="140" width="28" height="24" rx="1" fill="rgba(180,210,230,0.6)" stroke="#9BB" strokeWidth="0.8"/>
-                  <rect x="120" y="140" width="28" height="24" rx="1" fill="rgba(180,210,230,0.6)" stroke="#9BB" strokeWidth="0.8"/>
-                  <rect x="175" y="130" width="95" height="70" rx="2" fill="#C8C3BB" stroke="#999" strokeWidth="1.5"/>
+                  <rect width="320" height="200" fill="#C5DBE8"/><rect y="120" width="320" height="80" fill="#93C47D"/><polygon points="20,120 160,35 300,120" fill="#B0764F"/><rect x="20" y="120" width="280" height="80" fill="#E8DCC8" stroke="#C4B099" strokeWidth="0.5"/><rect x="80" y="148" width="24" height="52" rx="1" fill="#7B5B3A"/><circle cx="99" cy="176" r="1.5" fill="#C4A050"/><rect x="38" y="140" width="28" height="24" rx="1" fill="rgba(180,210,230,0.6)" stroke="#9BB" strokeWidth="0.8"/><rect x="120" y="140" width="28" height="24" rx="1" fill="rgba(180,210,230,0.6)" stroke="#9BB" strokeWidth="0.8"/><rect x="175" y="130" width="95" height="70" rx="2" fill="#C8C3BB" stroke="#999" strokeWidth="1.5"/>
                   {[0,1,2,3].map(i=><line key={i} x1="178" y1={142+i*14} x2="267" y2={142+i*14} stroke="#B3AEA8" strokeWidth="0.7"/>)}
                   <rect x="175" y="195" width="95" height="5" rx="1" fill="#C4B899" opacity="0.5"/>
-                  <line x1="12" y1="28" x2="12" y2="48" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/>
-                  <line x1="12" y1="28" x2="32" y2="28" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/>
-                  <line x1="308" y1="28" x2="308" y2="48" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/>
-                  <line x1="308" y1="28" x2="288" y2="28" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/>
-                  <line x1="12" y1="192" x2="12" y2="172" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/>
-                  <line x1="12" y1="192" x2="32" y2="192" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/>
-                  <line x1="308" y1="192" x2="308" y2="172" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/>
-                  <line x1="308" y1="192" x2="288" y2="192" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/>
+                  <line x1="12" y1="28" x2="12" y2="48" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/><line x1="12" y1="28" x2="32" y2="28" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/><line x1="308" y1="28" x2="308" y2="48" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/><line x1="308" y1="28" x2="288" y2="28" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/><line x1="12" y1="192" x2="12" y2="172" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/><line x1="12" y1="192" x2="32" y2="192" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/><line x1="308" y1="192" x2="308" y2="172" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/><line x1="308" y1="192" x2="288" y2="192" stroke="rgba(54,93,71,0.45)" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
                 <div style={{ position:"absolute", inset:0, background:"linear-gradient(to bottom, rgba(246,241,235,0.25) 0%, transparent 18%, transparent 82%, rgba(246,241,235,0.25) 100%)", pointerEvents:"none" }}/>
               </div>
@@ -487,23 +476,11 @@ export default function GarageDoorVisualPicker() {
           <div style={SCREEN_STYLE}>
             <h2 style={ss.h2}>Want a stronger, insulated door?</h2>
             <p style={ss.sub}>Insulated doors are quieter, more durable, and keep your garage comfortable year round.</p>
-            {[
-              {val:"yes",icon:"🛡️",label:"Yes, insulated",hint:"Recommended for attached garages",rec:true},
-              {val:"no",icon:"💨",label:"Standard is fine",hint:"Single-layer, lighter weight"},
-              {val:"unsure",icon:"🤔",label:"Not sure yet",hint:"We can help you decide"},
-            ].map(o=>(
-              <button key={o.val} style={{
-                ...ss.card,
-                border:sel.insulation===o.val?`2.5px solid ${C.accent}`:o.rec&&!sel.insulation?`2px solid ${C.accent}`:`2px solid ${C.border}`,
-                background:sel.insulation===o.val?C.accentSoft:o.rec&&!sel.insulation?C.accentSoft:C.card,
-              }} onClick={()=>setSel(p=>({...p,insulation:o.val}))}>
+            {[{val:"yes",icon:"🛡️",label:"Yes, insulated",hint:"Recommended for attached garages",rec:true},{val:"no",icon:"💨",label:"Standard is fine",hint:"Single-layer, lighter weight"},{val:"unsure",icon:"🤔",label:"Not sure yet",hint:"We can help you decide"}].map(o=>(
+              <button key={o.val} style={{...ss.card,border:sel.insulation===o.val?`2.5px solid ${C.accent}`:o.rec&&!sel.insulation?`2px solid ${C.accent}`:`2px solid ${C.border}`,background:sel.insulation===o.val?C.accentSoft:o.rec&&!sel.insulation?C.accentSoft:C.card}} onClick={()=>setSel(p=>({...p,insulation:o.val}))}>
                 <span style={{fontSize:28}}>{o.icon}</span>
                 <div style={{flex:1}}>
-                  <div style={{fontWeight:600,fontSize:16,display:"flex",alignItems:"center",gap:8}}>
-                    {o.label}
-                    {sel.insulation===o.val&&<span style={{fontSize:16,color:C.accent}}>✓</span>}
-                    {o.rec&&!sel.insulation&&<span style={{...ss.tag(C.accent),fontSize:9}}>RECOMMENDED</span>}
-                  </div>
+                  <div style={{fontWeight:600,fontSize:16,display:"flex",alignItems:"center",gap:8}}>{o.label}{sel.insulation===o.val&&<span style={{fontSize:16,color:C.accent}}>✓</span>}{o.rec&&!sel.insulation&&<span style={{...ss.tag(C.accent),fontSize:9}}>RECOMMENDED</span>}</div>
                   <div style={{fontSize:13,color:C.dim,marginTop:2}}>{o.hint}</div>
                 </div>
               </button>
@@ -511,27 +488,19 @@ export default function GarageDoorVisualPicker() {
             {sel.insulation&&(<div style={{textAlign:"center",fontSize:14,fontWeight:600,color:C.accent,marginBottom:4,marginTop:-4,animation:"fadeUp 0.2s ease-out"}}>Selected: {insSelectedLabel}</div>)}
             {sel.insulation&&(<button style={{...ss.btn,...ss.pri,marginTop:8,marginBottom:14,animation:"fadeUp 0.25s ease-out"}} onClick={next}>{insCtaLabel}</button>)}
             <button onClick={()=>setShowInsInfo(!showInsInfo)} style={{background:showInsInfo?C.accentSoft:C.card,border:`2px solid ${C.accent}`,borderRadius:14,color:C.accent,fontSize:16,fontWeight:700,cursor:"pointer",padding:"18px 22px",fontFamily:F.body,display:"flex",alignItems:"center",gap:10,width:"100%",transition:"all 0.2s",WebkitTapHighlightColor:"transparent",marginTop:4,boxShadow:C.shadow}}>
-              <span style={{fontSize:20,transition:"transform 0.3s",transform:showInsInfo?"rotate(90deg)":"rotate(0deg)"}}>▸</span>
-              What's the difference?
+              <span style={{fontSize:20,transition:"transform 0.3s",transform:showInsInfo?"rotate(90deg)":"rotate(0deg)"}}>▸</span>What's the difference?
             </button>
-            {showInsInfo&&(
-              <div style={{background:C.card,borderRadius:16,padding:22,border:`1px solid ${C.border}`,boxShadow:C.shadow,animation:"fadeUp 0.3s ease-out",marginTop:12}}>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}>
-                  <div style={{textAlign:"center"}}><div style={{background:"#EDEBE7",borderRadius:12,padding:"20px 12px",marginBottom:10}}><div style={{width:"70%",height:10,background:"#BBB",margin:"0 auto",borderRadius:5,boxShadow:"inset 0 1px 2px rgba(0,0,0,0.1)"}}/></div><div style={{fontSize:14,fontWeight:700}}>Standard</div><div style={{fontSize:12,color:C.dim}}>Single layer of steel</div></div>
-                  <div style={{textAlign:"center"}}><div style={{background:C.accentSoft,borderRadius:12,padding:"20px 12px",marginBottom:10,border:`1px solid ${C.accent}33`}}><div style={{display:"flex",flexDirection:"column",gap:3,alignItems:"center"}}><div style={{width:"70%",height:5,background:"#7BAE7E",borderRadius:3}}/><div style={{width:"70%",height:8,background:"#A8D4AB",borderRadius:4,boxShadow:"inset 0 1px 2px rgba(0,0,0,0.05)"}}/><div style={{width:"70%",height:5,background:"#7BAE7E",borderRadius:3}}/></div></div><div style={{fontSize:14,fontWeight:700,color:C.accent}}>Insulated</div><div style={{fontSize:12,color:C.dim}}>3-layer sandwich</div></div>
-                </div>
-                <div style={{marginBottom:20}}>
-                  {[{icon:"💪",text:"Stronger and more durable — resists dents"},{icon:"🤫",text:"Quieter — less noise opening and closing"},{icon:"🌡️",text:"Helps with temperature — keeps heat and cold out"}].map((b,i)=>(<div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"8px 0"}}><span style={{fontSize:16,flexShrink:0}}>{b.icon}</span><span style={{fontSize:14,color:C.text,lineHeight:1.4}}>{b.text}</span></div>))}
-                </div>
-                <div style={{fontSize:13,color:C.dim,lineHeight:1.5,padding:"6px 0 4px",fontStyle:"italic",borderTop:`1px solid ${C.border}`,marginTop:4}}>A basic non-insulated door can flex or dent more easily over time.</div>
-                <div style={{background:C.bg,borderRadius:12,padding:16,marginBottom:14,marginTop:16}}>
-                  <div style={{fontSize:12,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",color:C.dim,marginBottom:6}}>Insulation levels (R-value)</div>
-                  <div style={{fontSize:13,color:C.dim,lineHeight:1.4,marginBottom:12}}>Higher R-value = more insulation. In Colorado's climate, R-12 handles most homes well.</div>
-                  {[{level:"R-6",label:"Basic",desc:"Entry-level insulation",bar:25,color:C.border},{level:"R-12",label:"Best Value",desc:"Most popular choice",bar:60,color:C.accent,highlight:true},{level:"R-18",label:"Maximum",desc:"Extreme climates only",bar:90,color:C.dim}].map((tier,i)=>(<div key={i} style={{padding:"10px 0",borderBottom:i<2?`1px solid ${C.border}`:"none"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:14,fontWeight:700,color:tier.highlight?C.accent:C.text}}>{tier.level}</span><span style={{fontSize:13,fontWeight:500,color:tier.highlight?C.accent:C.dim}}>{tier.label}</span>{tier.highlight&&<span style={ss.tag(C.accent)}>Popular</span>}</div></div><div style={{height:6,borderRadius:3,background:"#E0DCD6",overflow:"hidden",marginBottom:3}}><div style={{height:"100%",width:`${tier.bar}%`,background:tier.color,borderRadius:3,transition:"width 0.5s ease"}}/></div><div style={{fontSize:12,color:C.dim}}>{tier.desc}</div></div>))}
-                </div>
-                <div style={{fontSize:14,color:C.accent,lineHeight:1.5,textAlign:"center",fontWeight:500}}>Most homeowners choose the middle option for the best balance of comfort and value.</div>
+            {showInsInfo&&(<div style={{background:C.card,borderRadius:16,padding:22,border:`1px solid ${C.border}`,boxShadow:C.shadow,animation:"fadeUp 0.3s ease-out",marginTop:12}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}><div style={{textAlign:"center"}}><div style={{background:"#EDEBE7",borderRadius:12,padding:"20px 12px",marginBottom:10}}><div style={{width:"70%",height:10,background:"#BBB",margin:"0 auto",borderRadius:5,boxShadow:"inset 0 1px 2px rgba(0,0,0,0.1)"}}/></div><div style={{fontSize:14,fontWeight:700}}>Standard</div><div style={{fontSize:12,color:C.dim}}>Single layer of steel</div></div><div style={{textAlign:"center"}}><div style={{background:C.accentSoft,borderRadius:12,padding:"20px 12px",marginBottom:10,border:`1px solid ${C.accent}33`}}><div style={{display:"flex",flexDirection:"column",gap:3,alignItems:"center"}}><div style={{width:"70%",height:5,background:"#7BAE7E",borderRadius:3}}/><div style={{width:"70%",height:8,background:"#A8D4AB",borderRadius:4,boxShadow:"inset 0 1px 2px rgba(0,0,0,0.05)"}}/><div style={{width:"70%",height:5,background:"#7BAE7E",borderRadius:3}}/></div></div><div style={{fontSize:14,fontWeight:700,color:C.accent}}>Insulated</div><div style={{fontSize:12,color:C.dim}}>3-layer sandwich</div></div></div>
+              <div style={{marginBottom:20}}>{[{icon:"💪",text:"Stronger and more durable — resists dents"},{icon:"🤫",text:"Quieter — less noise opening and closing"},{icon:"🌡️",text:"Helps with temperature — keeps heat and cold out"}].map((b,i)=>(<div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"8px 0"}}><span style={{fontSize:16,flexShrink:0}}>{b.icon}</span><span style={{fontSize:14,color:C.text,lineHeight:1.4}}>{b.text}</span></div>))}</div>
+              <div style={{fontSize:13,color:C.dim,lineHeight:1.5,padding:"6px 0 4px",fontStyle:"italic",borderTop:`1px solid ${C.border}`,marginTop:4}}>A basic non-insulated door can flex or dent more easily over time.</div>
+              <div style={{background:C.bg,borderRadius:12,padding:16,marginBottom:14,marginTop:16}}>
+                <div style={{fontSize:12,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",color:C.dim,marginBottom:6}}>Insulation levels (R-value)</div>
+                <div style={{fontSize:13,color:C.dim,lineHeight:1.4,marginBottom:12}}>Higher R-value = more insulation. In Colorado's climate, R-12 handles most homes well.</div>
+                {[{level:"R-6",label:"Basic",desc:"Entry-level insulation",bar:25,color:C.border},{level:"R-12",label:"Best Value",desc:"Most popular choice",bar:60,color:C.accent,highlight:true},{level:"R-18",label:"Maximum",desc:"Extreme climates only",bar:90,color:C.dim}].map((tier,i)=>(<div key={i} style={{padding:"10px 0",borderBottom:i<2?`1px solid ${C.border}`:"none"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:14,fontWeight:700,color:tier.highlight?C.accent:C.text}}>{tier.level}</span><span style={{fontSize:13,fontWeight:500,color:tier.highlight?C.accent:C.dim}}>{tier.label}</span>{tier.highlight&&<span style={ss.tag(C.accent)}>Popular</span>}</div></div><div style={{height:6,borderRadius:3,background:"#E0DCD6",overflow:"hidden",marginBottom:3}}><div style={{height:"100%",width:`${tier.bar}%`,background:tier.color,borderRadius:3,transition:"width 0.5s ease"}}/></div><div style={{fontSize:12,color:C.dim}}>{tier.desc}</div></div>))}
               </div>
-            )}
+              <div style={{fontSize:14,color:C.accent,lineHeight:1.5,textAlign:"center",fontWeight:500}}>Most homeowners choose the middle option for the best balance of comfort and value.</div>
+            </div>)}
           </div>
         );
 
@@ -564,15 +533,11 @@ export default function GarageDoorVisualPicker() {
           <div style={SCREEN_STYLE}>
             <h2 style={{...ss.h2,textAlign:"center",marginBottom:4}}>This looks great on your home</h2>
             <p style={{...ss.sub,textAlign:"center"}}>We'll confirm details and get this scheduled.</p>
-            <div style={{marginBottom:20}}>
-              <HousePreview doorStyle={sel.style} doorColor={sel.color} doorWindows={sel.windows} photoURL={photoURL} size={sel.size}/>
-            </div>
+            <div style={{marginBottom:20}}><HousePreview doorStyle={sel.style} doorColor={sel.color} doorWindows={sel.windows} photoURL={photoURL} size={sel.size}/></div>
             <div style={{background:C.card,borderRadius:16,padding:"20px 24px",boxShadow:C.shadow,border:`1px solid ${C.border}`,marginBottom:20}}>
               <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",color:C.dim,marginBottom:14}}>Your Selection</div>
               {[["Style",styleName],["Size",sel.size==="double"?"Double car":"Single car"],["Windows",sel.windows?"Yes":"No"],["Insulation",sel.insulation==="yes"?"Insulated":sel.insulation==="no"?"Standard":"TBD"],["Color",sel.colorName]].map(([k,v],i,a)=>(
-                <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"11px 0",borderBottom:i<a.length-1?`1px solid ${C.border}`:"none",fontSize:15}}>
-                  <span style={{color:C.dim}}>{k}</span><span style={{fontWeight:600}}>{v}</span>
-                </div>
+                <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"11px 0",borderBottom:i<a.length-1?`1px solid ${C.border}`:"none",fontSize:15}}><span style={{color:C.dim}}>{k}</span><span style={{fontWeight:600}}>{v}</span></div>
               ))}
             </div>
             <button style={{...ss.btn,...ss.pri}} onClick={next}>Send this design to Mary Anne →</button>
@@ -585,33 +550,13 @@ export default function GarageDoorVisualPicker() {
           <div style={SCREEN_STYLE}>
             <h2 style={ss.h2}>How do you want to do this?</h2>
             <p style={ss.sub}>Pick whichever is easier for you right now.</p>
-            <button onClick={()=>setContactMode("phone")} style={{...ss.card,flexDirection:"column",alignItems:"flex-start",padding:"22px 24px",border:contactMode==="phone"?`2.5px solid ${C.accent}`:`2px solid ${C.border}`,background:contactMode==="phone"?C.accentSoft:C.card}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}><span style={{fontSize:24}}>📞</span><span style={{fontSize:17,fontWeight:700}}>I'm on the phone right now</span></div>
-              <span style={{fontSize:13,color:C.dim,marginLeft:34}}>We'll send this directly to Mary Anne</span>
-            </button>
-            <button onClick={()=>setContactMode("text")} style={{...ss.card,flexDirection:"column",alignItems:"flex-start",padding:"22px 24px",border:contactMode==="text"?`2.5px solid ${C.accent}`:`2px solid ${C.border}`,background:contactMode==="text"?C.accentSoft:C.card}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}><span style={{fontSize:24}}>💬</span><span style={{fontSize:17,fontWeight:700}}>Text me about this door</span></div>
-              <span style={{fontSize:13,color:C.dim,marginLeft:34}}>We'll follow up with your design</span>
-            </button>
-            {contactMode&&(
-              <div style={{marginTop:8}}>
-                <div style={{marginBottom:14}}>
-                  <label style={{fontSize:13,fontWeight:600,color:C.dim,display:"block",marginBottom:6}}>
-                    {contactMode==="phone"?<>Your phone number <span style={{fontWeight:400,opacity:0.7}}>(so we can confirm next steps)</span></>:"Phone number"}
-                  </label>
-                  <input type="tel" placeholder="(303) 555-1234" value={phone} onChange={e=>setPhone(e.target.value)} style={ss.input} onFocus={e=>(e.target.style.borderColor=C.accent)} onBlur={e=>(e.target.style.borderColor=C.border)}/>
-                </div>
-                <div style={{marginBottom:14}}>
-                  <label style={{fontSize:13,fontWeight:600,color:C.dim,display:"block",marginBottom:6}}>Name <span style={{fontWeight:400,opacity:0.7}}>(optional)</span></label>
-                  <input type="text" placeholder="First name" value={name} onChange={e=>setName(e.target.value)} style={ss.input} onFocus={e=>(e.target.style.borderColor=C.accent)} onBlur={e=>(e.target.style.borderColor=C.border)}/>
-                </div>
-                {contactMode==="text"&&(
-                  <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 16px",background:C.warmSoft,borderRadius:12,fontSize:13,color:C.warm}}>
-                    <span>🔒</span> No spam — just one text about your door.
-                  </div>
-                )}
-              </div>
-            )}
+            <button onClick={()=>setContactMode("phone")} style={{...ss.card,flexDirection:"column",alignItems:"flex-start",padding:"22px 24px",border:contactMode==="phone"?`2.5px solid ${C.accent}`:`2px solid ${C.border}`,background:contactMode==="phone"?C.accentSoft:C.card}}><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}><span style={{fontSize:24}}>📞</span><span style={{fontSize:17,fontWeight:700}}>I'm on the phone right now</span></div><span style={{fontSize:13,color:C.dim,marginLeft:34}}>We'll send this directly to Mary Anne</span></button>
+            <button onClick={()=>setContactMode("text")} style={{...ss.card,flexDirection:"column",alignItems:"flex-start",padding:"22px 24px",border:contactMode==="text"?`2.5px solid ${C.accent}`:`2px solid ${C.border}`,background:contactMode==="text"?C.accentSoft:C.card}}><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}><span style={{fontSize:24}}>💬</span><span style={{fontSize:17,fontWeight:700}}>Text me about this door</span></div><span style={{fontSize:13,color:C.dim,marginLeft:34}}>We'll follow up with your design</span></button>
+            {contactMode&&(<div style={{marginTop:8}}>
+              <div style={{marginBottom:14}}><label style={{fontSize:13,fontWeight:600,color:C.dim,display:"block",marginBottom:6}}>{contactMode==="phone"?<>Your phone number <span style={{fontWeight:400,opacity:0.7}}>(so we can confirm next steps)</span></>:"Phone number"}</label><input type="tel" placeholder="(303) 555-1234" value={phone} onChange={e=>setPhone(e.target.value)} style={ss.input} onFocus={e=>(e.target.style.borderColor=C.accent)} onBlur={e=>(e.target.style.borderColor=C.border)}/></div>
+              <div style={{marginBottom:14}}><label style={{fontSize:13,fontWeight:600,color:C.dim,display:"block",marginBottom:6}}>Name <span style={{fontWeight:400,opacity:0.7}}>(optional)</span></label><input type="text" placeholder="First name" value={name} onChange={e=>setName(e.target.value)} style={ss.input} onFocus={e=>(e.target.style.borderColor=C.accent)} onBlur={e=>(e.target.style.borderColor=C.border)}/></div>
+              {contactMode==="text"&&(<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 16px",background:C.warmSoft,borderRadius:12,fontSize:13,color:C.warm}}><span>🔒</span> No spam — just one text about your door.</div>)}
+            </div>)}
             <button style={{...ss.btn,...ss.pri,marginTop:16,opacity:contactMode&&phone?1:0.4}} disabled={!contactMode||!phone} onClick={next}>{contactCtaLabel}</button>
           </div>
         );
@@ -620,25 +565,12 @@ export default function GarageDoorVisualPicker() {
         return (
           <div style={SCREEN_STYLE}>
             <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",textAlign:"center"}}>
-              {sent?(
-                <>
-                  <div style={{width:80,height:80,borderRadius:"50%",background:C.accentSoft,display:"flex",alignItems:"center",justifyContent:"center",fontSize:38,marginBottom:20,animation:"pop 0.4s ease-out"}}>✓</div>
-                  <h2 style={{...ss.h2,textAlign:"center"}}>Sent!</h2>
-                  <p style={ss.sub}>Mary Anne has your selections.</p>
-                </>
-              ):(
-                <>
-                  <h2 style={{...ss.h2,textAlign:"center",marginBottom:12}}>Ready to send?</h2>
-                  <p style={{...ss.sub,marginBottom:40}}>Hold the button to send your door selections{contactMode==="phone"?" directly to Mary Anne":""}.</p>
-                  <div onMouseDown={()=>setHolding(true)} onMouseUp={()=>setHolding(false)} onMouseLeave={()=>setHolding(false)} onTouchStart={e=>{e.preventDefault();setHolding(true);}} onTouchEnd={()=>setHolding(false)} style={{position:"relative",width:"100%",maxWidth:340,height:80,borderRadius:40,overflow:"hidden",cursor:"pointer",background:"#ABA69E",userSelect:"none",boxShadow:holding?`0 0 0 8px rgba(74,140,101,0.25), 0 0 40px rgba(74,140,101,0.4), 0 8px 24px rgba(0,0,0,0.2)`:`0 4px 20px rgba(0,0,0,0.12)`,transition:"box-shadow 0.3s, transform 0.2s",transform:holding?"scale(1.03)":"scale(1)"}}>
-                    <div style={{position:"absolute",inset:0,borderRadius:40,background:`linear-gradient(90deg, #2A6B42, ${C.accentGlow}, #4CAF68)`,width:`${holdProg*100}%`,transition:holding?"none":"width 0.3s ease-out"}}/>
-                    <div style={{position:"relative",zIndex:1,height:"100%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:800,color:"#fff",textShadow:holdProg>0.5?"none":"0 1px 3px rgba(0,0,0,0.3)",letterSpacing:"0.01em"}}>
-                      {holding?(holdProg>0.8?"Almost there…":"Keep holding…"):"Hold to send this to Mary Anne"}
-                    </div>
-                  </div>
-                  <p style={{fontSize:12,color:C.dim,marginTop:14}}>Press and hold for ~2 seconds</p>
-                </>
-              )}
+              {sent?(<><div style={{width:80,height:80,borderRadius:"50%",background:C.accentSoft,display:"flex",alignItems:"center",justifyContent:"center",fontSize:38,marginBottom:20,animation:"pop 0.4s ease-out"}}>✓</div><h2 style={{...ss.h2,textAlign:"center"}}>Sent!</h2><p style={ss.sub}>Mary Anne has your selections.</p></>
+              ):(<><h2 style={{...ss.h2,textAlign:"center",marginBottom:12}}>Ready to send?</h2><p style={{...ss.sub,marginBottom:40}}>Hold the button to send your door selections{contactMode==="phone"?" directly to Mary Anne":""}.</p>
+                <div onMouseDown={()=>setHolding(true)} onMouseUp={()=>setHolding(false)} onMouseLeave={()=>setHolding(false)} onTouchStart={e=>{e.preventDefault();setHolding(true);}} onTouchEnd={()=>setHolding(false)} style={{position:"relative",width:"100%",maxWidth:340,height:80,borderRadius:40,overflow:"hidden",cursor:"pointer",background:"#ABA69E",userSelect:"none",boxShadow:holding?`0 0 0 8px rgba(74,140,101,0.25), 0 0 40px rgba(74,140,101,0.4), 0 8px 24px rgba(0,0,0,0.2)`:`0 4px 20px rgba(0,0,0,0.12)`,transition:"box-shadow 0.3s, transform 0.2s",transform:holding?"scale(1.03)":"scale(1)"}}>
+                  <div style={{position:"absolute",inset:0,borderRadius:40,background:`linear-gradient(90deg, #2A6B42, ${C.accentGlow}, #4CAF68)`,width:`${holdProg*100}%`,transition:holding?"none":"width 0.3s ease-out"}}/>
+                  <div style={{position:"relative",zIndex:1,height:"100%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:800,color:"#fff",textShadow:holdProg>0.5?"none":"0 1px 3px rgba(0,0,0,0.3)",letterSpacing:"0.01em"}}>{holding?(holdProg>0.8?"Almost there…":"Keep holding…"):"Hold to send this to Mary Anne"}</div>
+                </div><p style={{fontSize:12,color:C.dim,marginTop:14}}>Press and hold for ~2 seconds</p></>)}
             </div>
           </div>
         );
@@ -650,9 +582,7 @@ export default function GarageDoorVisualPicker() {
               <div style={{width:72,height:72,borderRadius:"50%",background:C.accentSoft,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,marginBottom:20,animation:"pop 0.4s ease-out"}}>🎉</div>
               <h2 style={{...ss.h2,textAlign:"center"}}>Perfect. We'll take it from here.</h2>
               <p style={{...ss.sub,textAlign:"center",maxWidth:300}}>We'll confirm details and schedule your install. Expect to hear from us shortly{name?`, ${name}`:""}.</p>
-              <div style={{width:"100%",marginTop:12}}>
-                <HousePreview doorStyle={sel.style} doorColor={sel.color} doorWindows={sel.windows} photoURL={photoURL} size={sel.size}/>
-              </div>
+              <div style={{width:"100%",marginTop:12}}><HousePreview doorStyle={sel.style} doorColor={sel.color} doorWindows={sel.windows} photoURL={photoURL} size={sel.size}/></div>
               <div style={{marginTop:24,padding:"16px 22px",background:C.warmSoft,borderRadius:14,fontSize:15,color:C.warm,lineHeight:1.5,width:"100%"}}>📞 Questions? Just give us a call — we're happy to help.</div>
             </div>
           </div>
@@ -673,19 +603,9 @@ export default function GarageDoorVisualPicker() {
         input:focus { outline: none; }
         button:active { transform: scale(0.97); }
       `}</style>
-      {step>0&&current!=="done"&&(
-        <div style={ss.prog}>
-          <div style={ss.track}><div style={ss.fill}/></div>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.dim,marginTop:5}}>
-            <span>{current==="confirm"?"Almost done!":`Step ${step}`}</span>
-            <span>{progress}%</span>
-          </div>
-        </div>
-      )}
+      {step>0&&current!=="done"&&(<div style={ss.prog}><div style={ss.track}><div style={ss.fill}/></div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.dim,marginTop:5}}><span>{current==="confirm"?"Almost done!":`Step ${step}`}</span><span>{progress}%</span></div></div>)}
       {render()}
-      {step>0&&current!=="done"&&current!=="hero"&&(
-        <button style={ss.backBtn} onClick={back}>←</button>
-      )}
+      {step>0&&current!=="done"&&current!=="hero"&&(<button style={ss.backBtn} onClick={back}>←</button>)}
     </div>
   );
 }
