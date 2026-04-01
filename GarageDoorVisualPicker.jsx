@@ -19,18 +19,23 @@ const SCREEN_STYLE = {
   display: "flex", flexDirection: "column", animation: "fadeUp 0.32s ease-out",
 };
 
-const CDN = "https://azcdn.clopay.com/CONFIGURATOR/IMAGES/V2/PIMAGES/";
+const CDN_PNG = "https://azcdn.clopay.com/CONFIGURATOR/IMAGES/V2/PIMAGES/";
+const CDN_WEBP = "https://azcdn.clopay.com/EZVIZ/HomeImages/";
 
+/* ─── Real door image component ─── */
 const DoorImage = ({ style, windows, color }) => {
   const styleData = STYLES.find(s => s.id === style);
   const imgFile = styleData?.img || "PSHORT-4R-8C.PNG";
+  const isWebp = styleData?.type === "webp";
+  const cdnBase = isWebp ? CDN_WEBP : CDN_PNG;
   const [loaded, setLoaded] = useState(false);
-  const showTint = color && color !== "#FFFFFF" && color !== "#F0EDE8";
+  const showTint = !isWebp && color && color !== "#FFFFFF" && color !== "#F0EDE8";
+  const showWindows = !isWebp && windows;
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: "#D9D4CC", boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.06)" }}>
       <img
-        src={`${CDN}${imgFile}`}
+        src={`${cdnBase}${imgFile}`}
         alt={styleData?.name || "Garage Door"}
         onLoad={() => setLoaded(true)}
         style={{
@@ -53,13 +58,13 @@ const DoorImage = ({ style, windows, color }) => {
           pointerEvents: "none",
         }} />
       )}
-      {windows && (
+      {showWindows && (
         <div style={{
           position: "absolute", top: 0, left: 0, width: "100%", height: "27%",
           overflow: "hidden", pointerEvents: "none",
         }}>
           <img
-            src={`${CDN}GLAZ-D-8C_21.PNG`}
+            src={`${CDN_PNG}GLAZ-D-8C_21.PNG`}
             alt="Windows"
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
@@ -86,10 +91,14 @@ function isColorDark(hex) {
   return (r * 0.299 + g * 0.587 + b * 0.114) < 120;
 }
 
+/* ─── 6 door styles: 3 tintable PNGs + 3 pre-rendered WEBPs ─── */
 const STYLES = [
-  { id: "raised", name: "Classic Raised Panel", tag: "Most Popular", tagC: C.accent, sub: "Traditional and timeless", img: "PSHORT-4R-8C.PNG" },
-  { id: "carriage", name: "Carriage House", tag: "Classic Charm", tagC: C.warm, sub: "Elegant barn-door feel", img: "COACH-4R-8C.PNG" },
-  { id: "long", name: "Long Raised Panel", tag: "Elegant Lines", tagC: "#8B5E3C", sub: "Elongated panel design", img: "PLONG-4R-8C.PNG" },
+  { id: "raised", name: "Classic Raised Panel", tag: "Most Popular", tagC: C.accent, sub: "Traditional and timeless", img: "PSHORT-4R-8C.PNG", type: "png" },
+  { id: "carriage", name: "Carriage House", tag: "Classic Charm", tagC: C.warm, sub: "Elegant barn-door feel", img: "COACH-4R-8C.PNG", type: "png" },
+  { id: "long", name: "Long Raised Panel", tag: "Elegant Lines", tagC: "#8B5E3C", sub: "Elongated panel design", img: "PLONG-4R-8C.PNG", type: "png" },
+  { id: "flush", name: "Modern Flush", tag: "Sleek & Clean", tagC: "#6B7B8D", sub: "Contemporary smooth panels", img: "DD3C81.WEBP", type: "webp" },
+  { id: "barn", name: "Canyon Ridge", tag: "Premium Wood", tagC: "#7B5B3A", sub: "Real wood carriage style", img: "FF55F4.WEBP", type: "webp" },
+  { id: "contemporary", name: "Contemporary", tag: "Bold & Modern", tagC: "#2A2A2A", sub: "Sleek black with arched glass", img: "134DEE.WEBP", type: "webp" },
 ];
 
 const DOOR_COLORS = [
@@ -173,6 +182,8 @@ export default function GarageDoorVisualPicker() {
   const rafRef=useRef(null); const animRef=useRef(null);
 
   const current=STEPS[step]; const total=STEPS.length;
+  const selectedStyle = STYLES.find(s => s.id === sel.style);
+  const isWebpStyle = selectedStyle?.type === "webp";
   const go=(i)=>setStep(i);
   const next=useCallback(()=>setStep(s=>Math.min(s+1,total-1)),[total]);
   const back=()=>setStep(s=>Math.max(s-1,0));
@@ -308,7 +319,7 @@ export default function GarageDoorVisualPicker() {
         return (
           <div style={{ ...SCREEN_STYLE, padding:"22px 22px 108px" }}>
             <h2 style={{ ...ss.h2, marginBottom:4 }}>Got a photo of your house?</h2>
-            <p style={{ ...ss.sub, marginBottom:16 }}>Stand back a bit and capture the garage door and some of the front of your home. This helps us place your new door more accurately.</p>
+            <p style={{ ...ss.sub, marginBottom:16 }}>Stand back a bit and capture the garage door and some of the front of your home.</p>
             <div style={{ background:C.card, borderRadius:16, padding:4, marginBottom:16, border:`1px solid ${C.border}`, boxShadow:C.shadow, overflow:"hidden" }}>
               <div style={{ borderRadius:12, overflow:"hidden", aspectRatio:"16/8.5", position:"relative" }}>
                 <svg viewBox="0 0 320 200" width="100%" height="100%">
@@ -353,7 +364,7 @@ export default function GarageDoorVisualPicker() {
         return (
           <div style={SCREEN_STYLE}>
             <h2 style={ss.h2}>Swipe through styles</h2>
-            <p style={ss.sub}>Flick to skip, or swipe right to save. Faster = more fun.</p>
+            <p style={ss.sub}>Flick to skip, or swipe right to save. {STYLES.length} styles to explore.</p>
             {!done&&cur?(
               <>
                 <div style={{position:"relative",height:360,marginBottom:16,userSelect:"none",touchAction:"pan-y",cursor:dragRef.current.dragging?"grabbing":"grab"}}
@@ -381,6 +392,7 @@ export default function GarageDoorVisualPicker() {
                         <span style={ss.tag(cur.tagC)}>{cur.tag}</span>
                       </div>
                       <p style={{fontSize:15,color:C.dim,margin:0,lineHeight:1.4}}>{cur.sub}</p>
+                      {cur.type==="webp"&&<p style={{fontSize:12,color:C.warm,margin:"6px 0 0",fontStyle:"italic"}}>Shown in designer finish — color as pictured</p>}
                     </div>
                   </div>
                 </div>
@@ -447,24 +459,37 @@ export default function GarageDoorVisualPicker() {
       case "windows":
         return (
           <div style={SCREEN_STYLE}>
-            <h2 style={ss.h2}>Add windows?</h2>
-            <p style={ss.sub}>Windows let in natural light and add curb appeal. See the difference below.</p>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
-              {[true,false].map(w=>(
-                <button key={String(w)} onClick={()=>setSel(p=>({...p,windows:w}))} style={{padding:0,borderRadius:16,overflow:"hidden",cursor:"pointer",border:sel.windows===w?`3px solid ${C.accent}`:`2px solid ${C.border}`,background:C.card,boxShadow:C.shadow,transition:"all 0.2s",WebkitTapHighlightColor:"transparent"}}>
-                  <div style={{...ss.doorBox,height:110}}>
-                    <DoorImage style={sel.style} windows={w} color={sel.color} />
-                  </div>
-                  <div style={{padding:"14px 14px",fontSize:15,fontWeight:600,textAlign:"center"}}>{w?"☀️ With Windows":"🚫 No Windows"}</div>
+            {isWebpStyle ? (
+              <>
+                <h2 style={ss.h2}>Windows included</h2>
+                <p style={ss.sub}>This style comes with the window design shown. Looking great!</p>
+                <div style={{...ss.doorBox,height:200,borderRadius:16,marginBottom:16}}>
+                  <DoorImage style={sel.style} windows={false} />
+                </div>
+                <button style={{...ss.btn,...ss.pri}} onClick={next}>Continue →</button>
+              </>
+            ) : (
+              <>
+                <h2 style={ss.h2}>Add windows?</h2>
+                <p style={ss.sub}>Windows let in natural light and add curb appeal.</p>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+                  {[true,false].map(w=>(
+                    <button key={String(w)} onClick={()=>setSel(p=>({...p,windows:w}))} style={{padding:0,borderRadius:16,overflow:"hidden",cursor:"pointer",border:sel.windows===w?`3px solid ${C.accent}`:`2px solid ${C.border}`,background:C.card,boxShadow:C.shadow,transition:"all 0.2s",WebkitTapHighlightColor:"transparent"}}>
+                      <div style={{...ss.doorBox,height:110}}>
+                        <DoorImage style={sel.style} windows={w} color={sel.color} />
+                      </div>
+                      <div style={{padding:"14px 14px",fontSize:15,fontWeight:600,textAlign:"center"}}>{w?"☀️ With Windows":"🚫 No Windows"}</div>
+                    </button>
+                  ))}
+                </div>
+                <div style={{ textAlign:"center", fontSize:14, fontWeight:600, color:C.accent, marginBottom:10 }}>
+                  Selected: {sel.windows ? "With Windows" : "No Windows"}
+                </div>
+                <button style={{ ...ss.btn, ...ss.pri, marginTop:4 }} onClick={next}>
+                  {sel.windows ? "Continue with windows →" : "Continue without windows →"}
                 </button>
-              ))}
-            </div>
-            <div style={{ textAlign:"center", fontSize:14, fontWeight:600, color:C.accent, marginBottom:10, animation:"fadeUp 0.2s ease-out" }}>
-              Selected: {sel.windows ? "With Windows" : "No Windows"}
-            </div>
-            <button style={{ ...ss.btn, ...ss.pri, marginTop:4 }} onClick={next}>
-              {sel.windows ? "Continue with windows →" : "Continue without windows →"}
-            </button>
+              </>
+            )}
           </div>
         );
 
@@ -482,8 +507,8 @@ export default function GarageDoorVisualPicker() {
                 </div>
               </button>
             ))}
-            {sel.insulation&&(<div style={{textAlign:"center",fontSize:14,fontWeight:600,color:C.accent,marginBottom:4,marginTop:-4,animation:"fadeUp 0.2s ease-out"}}>Selected: {insSelectedLabel}</div>)}
-            {sel.insulation&&(<button style={{...ss.btn,...ss.pri,marginTop:8,marginBottom:14,animation:"fadeUp 0.25s ease-out"}} onClick={next}>{insCtaLabel}</button>)}
+            {sel.insulation&&(<div style={{textAlign:"center",fontSize:14,fontWeight:600,color:C.accent,marginBottom:4,marginTop:-4}}>Selected: {insSelectedLabel}</div>)}
+            {sel.insulation&&(<button style={{...ss.btn,...ss.pri,marginTop:8,marginBottom:14}} onClick={next}>{insCtaLabel}</button>)}
             <button onClick={()=>setShowInsInfo(!showInsInfo)} style={{background:showInsInfo?C.accentSoft:C.card,border:`2px solid ${C.accent}`,borderRadius:14,color:C.accent,fontSize:16,fontWeight:700,cursor:"pointer",padding:"18px 22px",fontFamily:F.body,display:"flex",alignItems:"center",gap:10,width:"100%",transition:"all 0.2s",WebkitTapHighlightColor:"transparent",marginTop:4,boxShadow:C.shadow}}>
               <span style={{fontSize:20,transition:"transform 0.3s",transform:showInsInfo?"rotate(90deg)":"rotate(0deg)"}}>▸</span>What's the difference?
             </button>
@@ -504,23 +529,37 @@ export default function GarageDoorVisualPicker() {
       case "color":
         return (
           <div style={{ ...SCREEN_STYLE, padding:"20px 22px 132px" }}>
-            <h2 style={{ ...ss.h2, marginBottom:4 }}>Pick a color</h2>
-            <p style={{ ...ss.sub, marginBottom:12 }}>Tap any color to preview it on your door.</p>
-            <div style={{textAlign:"center",marginBottom:8,fontSize:15,fontWeight:600,color:C.accent,transition:"all 0.3s"}}>Selected: {sel.colorName}</div>
-            <div style={{marginBottom:12}} key={`preview-${colorPulse}`}>
-              <HousePreview doorStyle={sel.style} doorColor={sel.color} doorWindows={sel.windows} photoURL={photoURL} size={sel.size}/>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:8}}>
-              {DOOR_COLORS.map(c=>{const active=sel.color===c.hex;return(
-                <button key={c.id} onClick={()=>{setSel(p=>({...p,color:c.hex,colorName:c.name}));setColorPulse(p=>p+1);}} style={{padding:10,borderRadius:14,cursor:"pointer",border:active?`3px solid ${C.accent}`:`2px solid ${C.border}`,background:active?C.accentSoft:C.card,boxShadow:active?`0 0 0 3px ${C.accentSoft}`:C.shadow,transition:"all 0.2s cubic-bezier(0.25,0.1,0.25,1)",transform:active?"scale(1.04)":"scale(1)",display:"flex",flexDirection:"column",alignItems:"center",gap:6,WebkitTapHighlightColor:"transparent"}}>
-                  <div style={{width:40,height:40,borderRadius:12,background:c.hex,border:c.hex==="#F0EDE8"?"1px solid #ddd":"1px solid transparent",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.12)",transition:"transform 0.2s"}}/>
-                  <span style={{fontSize:10,fontWeight:active?700:600,color:active?C.accent:C.dim,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
-                </button>
-              );})}
-            </div>
-            <div style={{position:"sticky",bottom:12,marginTop:14,paddingTop:10,background:"linear-gradient(to bottom, rgba(246,241,235,0), rgba(246,241,235,0.92) 28%, rgba(246,241,235,1) 100%)"}}>
-              <button style={{...ss.btn,...ss.pri,marginTop:0,marginBottom:0}} onClick={next}>Continue with this color →</button>
-            </div>
+            {isWebpStyle ? (
+              <>
+                <h2 style={{ ...ss.h2, marginBottom:4 }}>Designer finish</h2>
+                <p style={{ ...ss.sub, marginBottom:12 }}>This style comes in the premium finish shown.</p>
+                <div style={{marginBottom:16}}>
+                  <HousePreview doorStyle={sel.style} doorColor={sel.color} doorWindows={sel.windows} photoURL={photoURL} size={sel.size}/>
+                </div>
+                <button style={{...ss.btn,...ss.pri}} onClick={next}>Continue with this finish →</button>
+                <button style={{...ss.btn,...ss.sec}} onClick={()=>go(STEPS.indexOf("pick"))}>Pick a different style</button>
+              </>
+            ) : (
+              <>
+                <h2 style={{ ...ss.h2, marginBottom:4 }}>Pick a color</h2>
+                <p style={{ ...ss.sub, marginBottom:12 }}>Tap any color to preview it on your door.</p>
+                <div style={{textAlign:"center",marginBottom:8,fontSize:15,fontWeight:600,color:C.accent}}>Selected: {sel.colorName}</div>
+                <div style={{marginBottom:12}} key={`preview-${colorPulse}`}>
+                  <HousePreview doorStyle={sel.style} doorColor={sel.color} doorWindows={sel.windows} photoURL={photoURL} size={sel.size}/>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:8}}>
+                  {DOOR_COLORS.map(c=>{const active=sel.color===c.hex;return(
+                    <button key={c.id} onClick={()=>{setSel(p=>({...p,color:c.hex,colorName:c.name}));setColorPulse(p=>p+1);}} style={{padding:10,borderRadius:14,cursor:"pointer",border:active?`3px solid ${C.accent}`:`2px solid ${C.border}`,background:active?C.accentSoft:C.card,boxShadow:active?`0 0 0 3px ${C.accentSoft}`:C.shadow,transition:"all 0.2s cubic-bezier(0.25,0.1,0.25,1)",transform:active?"scale(1.04)":"scale(1)",display:"flex",flexDirection:"column",alignItems:"center",gap:6,WebkitTapHighlightColor:"transparent"}}>
+                      <div style={{width:40,height:40,borderRadius:12,background:c.hex,border:c.hex==="#F0EDE8"?"1px solid #ddd":"1px solid transparent",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.12)"}}/>
+                      <span style={{fontSize:10,fontWeight:active?700:600,color:active?C.accent:C.dim,textAlign:"center",lineHeight:1.2}}>{c.name}</span>
+                    </button>
+                  );})}
+                </div>
+                <div style={{position:"sticky",bottom:12,marginTop:14,paddingTop:10,background:"linear-gradient(to bottom, rgba(246,241,235,0), rgba(246,241,235,0.92) 28%, rgba(246,241,235,1) 100%)"}}>
+                  <button style={{...ss.btn,...ss.pri,marginTop:0,marginBottom:0}} onClick={next}>Continue with this color →</button>
+                </div>
+              </>
+            )}
           </div>
         );
 
@@ -533,7 +572,7 @@ export default function GarageDoorVisualPicker() {
             <div style={{marginBottom:20}}><HousePreview doorStyle={sel.style} doorColor={sel.color} doorWindows={sel.windows} photoURL={photoURL} size={sel.size}/></div>
             <div style={{background:C.card,borderRadius:16,padding:"20px 24px",boxShadow:C.shadow,border:`1px solid ${C.border}`,marginBottom:20}}>
               <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",color:C.dim,marginBottom:14}}>Your Selection</div>
-              {[["Style",styleName],["Size",sel.size==="double"?"Double car":"Single car"],["Windows",sel.windows?"Yes":"No"],["Insulation",sel.insulation==="yes"?"Insulated":sel.insulation==="no"?"Standard":"TBD"],["Color",sel.colorName]].map(([k,v],i,a)=>(
+              {[["Style",styleName],["Size",sel.size==="double"?"Double car":"Single car"],["Windows",isWebpStyle?"Included":sel.windows?"Yes":"No"],["Insulation",sel.insulation==="yes"?"Insulated":sel.insulation==="no"?"Standard":"TBD"],["Color",isWebpStyle?"Designer Finish":sel.colorName]].map(([k,v],i,a)=>(
                 <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"11px 0",borderBottom:i<a.length-1?`1px solid ${C.border}`:"none",fontSize:15}}><span style={{color:C.dim}}>{k}</span><span style={{fontWeight:600}}>{v}</span></div>
               ))}
             </div>
